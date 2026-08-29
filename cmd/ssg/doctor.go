@@ -93,7 +93,13 @@ func doCheck() {
 			fmt.Printf("%s\n\t%s\n%s\n", res.Name, res.Message, res.Detail)
 			continue
 		}
-		fmt.Printf("%s\n\t%s %s\n\n", res.Name, res.Message, res.Detail)
+
+		// NOTE 当 detail 为空时，message 后的空格在测试时很难发现
+		if res.Detail == "" {
+			fmt.Printf("%s\n\t%s%s\n\n", res.Name, res.Message, res.Detail)
+		} else {
+			fmt.Printf("%s\n\t%s %s\n\n", res.Name, res.Message, res.Detail)
+		}
 	}
 
 	switch issues {
