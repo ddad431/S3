@@ -64,6 +64,10 @@ func runBuild(args []string) int {
 }
 
 func doBuild(source string) error {
+	if err := precheck(source); err != nil {
+		return fmt.Errorf("build failed: %w", err)
+	}
+
 	if err := preclean(source); err != nil {
 		return fmt.Errorf("build failed: %w", err)
 	}
@@ -74,6 +78,38 @@ func doBuild(source string) error {
 
 	if err := buildPosts(source); err != nil {
 		return fmt.Errorf("build failed: %w", err)
+	}
+
+	return nil
+}
+
+func precheck(source string) error {
+	states := checkLayout(source)
+
+	for _, state := range states {
+		switch state.State {
+		case PathStateOk:
+			continue
+
+		case PathStateMissing:
+			if state.Type == PathFile {
+				return fmt.Errorf("file '%s' does not exist", state.Path)
+			}
+			if state.Type == PathDir {
+				return fmt.Errorf("directory '%s' does not exist", state.Path)
+			}
+
+		case PathStateConflict:
+			if state.Type == PathFile {
+				return fmt.Errorf("'%s' is a file, expected a directory", state.Path)
+			}
+			if state.Type == PathDir {
+				return fmt.Errorf("'%s' is a directory, expected a file", state.Path)
+			}
+
+		case PathStateError:
+			return state.Err
+		}
 	}
 
 	return nil
