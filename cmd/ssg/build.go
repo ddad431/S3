@@ -130,24 +130,23 @@ func preclean(source string) error {
 
 func buildIndex(source string) error {
 	theme := "default"
-	base := filepath.Join("themes", theme)
-	icss := filepath.Join(base, "index.css")
-	pcss := filepath.Join(base, "post.css")
+	sbase := filepath.Join(source, "themes", theme)
+	dbase := filepath.Join(source, "build", "themes", theme)
 
-	if err := os.MkdirAll(filepath.Join("build", base), 0755); err != nil {
+	if err := os.MkdirAll(dbase, 0755); err != nil {
 		return err
 	}
 
-	files := []string{icss, pcss}
+	files := []string{"index.css", "post.css"}
 	for _, file := range files {
-		if err := CopyFile(file, filepath.Join("build", file)); err != nil {
+		if err := CopyFile(filepath.Join(sbase, file), filepath.Join(dbase, file)); err != nil {
 			return err
 		}
 	}
 
 	src := filepath.Join(source, "index.md")
 	dst := filepath.Join(source, "build", "index.html")
-	if err := mdToHTML(src, dst, icss); err != nil {
+	if err := mdToHTML(src, dst, filepath.Join(sbase, "index.css")); err != nil {
 		return err
 	}
 
