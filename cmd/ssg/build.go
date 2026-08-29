@@ -25,7 +25,7 @@ func (opts *buildOpts) validate() error {
 	return nil
 }
 
-func newBuildCmd(opts buildOpts) *flag.FlagSet {
+func newBuildCmd(opts *buildOpts) *flag.FlagSet {
 	cmd := flag.NewFlagSet("build", flag.ExitOnError)
 
 	cmd.StringVar(&opts.path, "s", "", "path to source directory")
@@ -45,7 +45,7 @@ func newBuildCmd(opts buildOpts) *flag.FlagSet {
 func runBuild(args []string) int {
 	var opts buildOpts
 
-	cmd := newBuildCmd(opts)
+	cmd := newBuildCmd(&opts)
 	if err := cmd.Parse(args); err != nil {
 		return 1
 	}
