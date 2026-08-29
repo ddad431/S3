@@ -1,0 +1,38 @@
+# case: no posts
+cd tmp1
+exec ssg build
+exists build/index.html build/themes/default/index.css build/themes/default/post.css
+
+
+# case: no posts with flag (--source)
+cd ../tmp2
+exec ssg build --source test
+exists test/build/index.html test/build/themes/default/index.css test/build/themes/default/post.css
+
+
+# case: has posts and images
+cd ../tmp3
+exec ssg build --source test
+exists test/build/index.html test/build/themes/default/index.css test/build/themes/default/post.css
+exists test/build/posts/k1/p1.html test/build/posts/k1/p2.html test/build/posts/k1/images/1.png 
+exists test/build/posts/k2/p3.html
+! exists test/build/posts/k2/p4.html
+
+-- tmp1/posts/_ --
+-- tmp1/index.md --
+-- tmp1/themes/default/index.css --
+-- tmp1/themes/default/post.css --
+
+-- tmp2/test/posts/_ --
+-- tmp2/test/index.md --
+-- tmp2/test/themes/default/index.css --
+-- tmp2/test/themes/default/post.css --
+
+-- tmp3/test/posts/k1/p1.md --
+-- tmp3/test/posts/k1/p2.md --
+-- tmp3/test/posts/k1/images/1.png --
+-- tmp3/test/posts/k2/p3.md --
+-- tmp3/test/posts/k2/p4.txt --
+-- tmp3/test/index.md --
+-- tmp3/test/themes/default/index.css --
+-- tmp3/test/themes/default/post.css --

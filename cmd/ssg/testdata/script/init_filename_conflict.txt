@@ -1,0 +1,40 @@
+# case: has printing successful handling info before failure
+cd tmp1
+! exec ssg init [--force]
+cmp stdout ../expected_out_mix_failed.txt
+exec ssg init --force
+cmp stdout ../expected_out_mix_successful.txt
+
+
+# case: only failed info
+cd ../tmp2
+! exec ssg init
+cmp stdout ../expected_out_only_failed.txt
+exec ssg init --force
+cmp stdout ../expected_out_only_successful.txt
+
+
+-- tmp1/index.md/_ --
+
+-- tmp2/posts/_ --
+-- tmp2/index.md/_ --
+-- tmp2/themes/default/index.css --
+-- tmp2/themes/default/post.css --
+
+
+-- expected_out_mix_failed.txt --
+  created   posts
+
+initialization failed: 'index.md' is a directory, expected file (use --force/-f to overwrite)
+-- expected_out_mix_successful.txt --
+  modified  index.md (directory -> file)
+  created   themes\default\index.css
+  created   themes\default\post.css
+
+initialization successful
+-- expected_out_only_failed.txt --
+initialization failed: 'index.md' is a directory, expected file (use --force/-f to overwrite)
+-- expected_out_only_successful.txt --
+  modified  index.md (directory -> file)
+
+initialization successful

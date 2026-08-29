@@ -1,0 +1,26 @@
+cd tmp1
+exec ssg init
+exec ssg init
+cmp stdout ../expected_out.txt
+
+
+
+cd ../tmp2
+exec ssg init
+exec ssg init --force
+cmp stdout ../expected_out.txt
+
+
+cd ../tmp3
+exec ssg init --path test
+exec ssg init --path test
+cmp stdout ../expected_out.txt
+
+
+-- tmp1/_ --
+-- tmp2/_ --
+-- tmp3/test/_ --
+
+
+-- expected_out.txt --
+initialized

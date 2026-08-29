@@ -1,0 +1,38 @@
+# case: missing file
+cd tmp1
+! exec ssg build --source test
+cmp stdout ../invalid_layout_missing_file.txt
+
+
+# case: missing directory
+cd ../tmp2
+! exec ssg build --source test
+cmp stdout ../invalid_layout_missing_directory.txt
+
+
+# case: pathname conflict
+cd ../tmp3
+! exec ssg build --source test
+cmp stdout ../invalid_layout_filename_conflict.txt
+
+
+-- tmp1/test/posts/_ --
+-- tmp1/test/index.md --
+-- tmp1/test/themes/default/index.css --
+
+-- tmp2/test/index.md --
+-- tmp2/test/themes/default/index.css --
+-- tmp2/test/themes/default/post.css --
+
+-- tmp3/test/posts/_ --
+-- tmp3/test/index.md/_ --
+-- tmp3/test/themes/default/index.css --
+-- tmp3/test/themes/default/post.css --
+
+
+-- invalid_layout_missing_file.txt --
+build failed: file 'test\themes\default\post.css' does not exist
+-- invalid_layout_missing_directory.txt --
+build failed: directory 'test\posts' does not exist
+-- invalid_layout_filename_conflict.txt --
+build failed: 'test\index.md' is a directory, expected a file

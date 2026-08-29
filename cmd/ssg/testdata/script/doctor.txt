@@ -1,0 +1,59 @@
+# case: no issues
+cd tmp1
+exec ssg doctor
+cmp stdout ../no-issues.txt
+
+
+# case: invalid directory layout
+cd ../tmp2
+exec ssg doctor
+cmp stdout ../invalid_directory_layout.txt
+
+
+# case: missing pandoc
+env ORIGINAL_PATH=$PATH
+env PATH=$SSG_PATH
+cd ../tmp1
+exec ssg doctor
+cmp stdout ../missing_pandoc.txt
+env PATH=$ORIGINAL_PATH
+
+
+-- tmp1/index.md --
+-- tmp1/posts/_ --
+-- tmp1/themes/default/index.css --
+-- tmp1/themes/default/post.css --
+
+-- tmp2/_ --
+
+
+-- no-issues.txt --
+pandoc
+	found D:\Apps\scoop\shims\pandoc.exe
+
+directory layout
+	required files exist
+
+-- invalid_directory_layout.txt --
+pandoc
+	found D:\Apps\scoop\shims\pandoc.exe
+
+directory layout
+	missing required files or permission denied
+
+	• posts/                   (directory)
+	• index.md                 
+	• themes/default/index.css 
+	• themes/default/post.css  
+
+	Run 'ssg init' to fix missing files
+
+found 1 issue
+-- missing_pandoc.txt --
+pandoc
+	not found
+
+directory layout
+	required files exist
+
+found 1 issue
