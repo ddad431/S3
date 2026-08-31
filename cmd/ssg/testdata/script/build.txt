@@ -1,32 +1,51 @@
 # case: no posts
 cd tmp1
 exec ssg build
-exists build/index.html build/themes/default/index.css build/themes/default/post.css
+exists build/index.html
 
 
 # case: no posts with flag (--source)
 cd ../tmp2
 exec ssg build --source test
-exists test/build/index.html test/build/themes/default/index.css test/build/themes/default/post.css
+exists test/build/index.html
 
 
 # case: has posts and images
 cd ../tmp3
 exec ssg build --source test
-exists test/build/index.html test/build/themes/default/index.css test/build/themes/default/post.css
-exists test/build/posts/k1/p1.html test/build/posts/k1/p2.html test/build/posts/k1/images/1.png 
+exists test/build/index.html
+exists test/build/posts/k1/p1.html test/build/posts/k1/p2.html test/build/posts/k1/images/1.png
 exists test/build/posts/k2/p3.html
 ! exists test/build/posts/k2/p4.html
 
+
+# case: recognize 'assets' folder in theme template
+cd ../tmp4
+exec ssg build --source test
+exists test/build/index.html
+exists test/build/posts/k1/p1.html test/build/posts/k1/p2.html test/build/posts/k1/images/1.png
+exists test/build/posts/k2/p3.html
+! exists test/build/posts/k2/p4.html
+exists test/build/assets/index.css
+exists test/build/assets/post.css
+
+
+# case: ignore folders in theme template whose names are not 'assets' 
+cd ../tmp5
+exec ssg build --source test
+exists test/build/index.html
+! exists test/build/styles/index.css
+
+
 -- tmp1/posts/_ --
 -- tmp1/index.md --
--- tmp1/themes/default/index.css --
--- tmp1/themes/default/post.css --
+-- tmp1/themes/default/index.html --
+-- tmp1/themes/default/post.html --
 
 -- tmp2/test/posts/_ --
 -- tmp2/test/index.md --
--- tmp2/test/themes/default/index.css --
--- tmp2/test/themes/default/post.css --
+-- tmp2/test/themes/default/index.html --
+-- tmp2/test/themes/default/post.html --
 
 -- tmp3/test/posts/k1/p1.md --
 -- tmp3/test/posts/k1/p2.md --
@@ -34,5 +53,22 @@ exists test/build/posts/k2/p3.html
 -- tmp3/test/posts/k2/p3.md --
 -- tmp3/test/posts/k2/p4.txt --
 -- tmp3/test/index.md --
--- tmp3/test/themes/default/index.css --
--- tmp3/test/themes/default/post.css --
+-- tmp3/test/themes/default/index.html --
+-- tmp3/test/themes/default/post.html --
+
+-- tmp4/test/index.md --
+-- tmp4/test/posts/k1/p1.md --
+-- tmp4/test/posts/k1/p2.md --
+-- tmp4/test/posts/k1/images/1.png --
+-- tmp4/test/posts/k2/p3.md --
+-- tmp4/test/posts/k2/p4.txt --
+-- tmp4/test/themes/default/index.html --
+-- tmp4/test/themes/default/post.html --
+-- tmp4/test/themes/default/assets/index.css --
+-- tmp4/test/themes/default/assets/post.css --
+
+-- tmp5/test/index.md --
+-- tmp5/test/posts/_ --
+-- tmp5/test/themes/default/index.html --
+-- tmp5/test/themes/default/post.html --
+-- tmp5/test/themes/default/styles/index.css

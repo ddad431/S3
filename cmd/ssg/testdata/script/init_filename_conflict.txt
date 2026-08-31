@@ -18,8 +18,8 @@ cmp stdout ../expected_out_only_successful.txt
 
 -- tmp2/posts/_ --
 -- tmp2/index.md/_ --
--- tmp2/themes/default/index.css --
--- tmp2/themes/default/post.css --
+-- tmp2/themes/default/index.html --
+-- tmp2/themes/default/post.html --
 
 
 -- expected_out_mix_failed.txt --
@@ -28,8 +28,8 @@ cmp stdout ../expected_out_only_successful.txt
 initialization failed: 'index.md' is a directory, expected file (use --force/-f to overwrite)
 -- expected_out_mix_successful.txt --
   modified  index.md (directory -> file)
-  created   themes\default\index.css
-  created   themes\default\post.css
+  created   themes\default\index.html
+  created   themes\default\post.html
 
 initialization successful
 -- expected_out_only_failed.txt --

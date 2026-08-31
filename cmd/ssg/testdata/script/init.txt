@@ -21,14 +21,14 @@ cmp stdout ../init_with_specified_directory.txt
 -- init_with_current_directory.txt --
   created   posts
   created   index.md
-  created   themes\default\index.css
-  created   themes\default\post.css
+  created   themes\default\index.html
+  created   themes\default\post.html
 
 initialization successful
 -- init_with_specified_directory.txt --
   created   test\posts
   created   test\index.md
-  created   test\themes\default\index.css
-  created   test\themes\default\post.css
+  created   test\themes\default\index.html
+  created   test\themes\default\post.html
 
 initialization successful

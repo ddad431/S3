@@ -3,55 +3,26 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os/exec"
 	"strings"
 )
 
 // $ ssg doctor
-// pandoc
-//         found D:\Apps\scoop\shims\pandoc.exe
 // directory layout
 //         required files exist
 //
 // $ ssg doctor
-// pandoc
-//         not found
-// directory layout
-//         required files exist
-//
-// found 1 issue
-//
-// $ ssg doctor
-// pandoc
-//         found D:\Apps\scoop\shims\pandoc.exe
 //
 // directory layout
 //         missing required files or permission denied
 //
 //         • posts/                   (directory)
 //         • index.md
-//         • themes/default/index.css
-//         • themes/default/post.css
+//         • themes/default/index.html
+//         • themes/default/post.html
 //
 //         Run 'ssg init' to fix missing files
 //
 // found 1 issue
-//
-// $ ssg doctor
-// pandoc
-//         not found
-//
-// directory layout
-//         missing required files or permission denied
-//
-//         • posts/                   (directory)
-//         • index.md
-//         • themes/default/index.css
-//         • themes/default/post.css
-//
-//         Run 'ssg init' to fix missing files
-//
-// found 2 issues
 
 func newDoctorCmd() *flag.FlagSet {
 	cmd := flag.NewFlagSet("doctor", flag.ExitOnError)
@@ -82,7 +53,6 @@ type CheckResult struct {
 
 func doCheck() {
 	results := []CheckResult{
-		checkPandoc(),
 		checkDirectoryLayout(),
 	}
 
@@ -109,25 +79,6 @@ func doCheck() {
 		fmt.Printf("found %v issue\n", issues)
 	default:
 		fmt.Printf("found %v issues\n", issues)
-	}
-}
-
-func checkPandoc() CheckResult {
-	path, err := exec.LookPath("pandoc")
-
-	if err != nil {
-		return CheckResult{
-			Name:    "pandoc",
-			Ok:      false,
-			Message: "not found",
-		}
-	}
-
-	return CheckResult{
-		Name:    "pandoc",
-		Ok:      true,
-		Message: "found",
-		Detail:  path,
 	}
 }
 

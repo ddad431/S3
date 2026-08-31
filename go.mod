@@ -2,7 +2,10 @@ module github.com/ddad431/S3
 
 go 1.27.0
 
-require github.com/rogpeppe/go-internal v1.16.0
+require (
+	github.com/rogpeppe/go-internal v1.16.0
+	github.com/yuin/goldmark/v2 v2.0.0
+)
 
 require (
 	golang.org/x/sys v0.26.0 // indirect

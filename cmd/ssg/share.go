@@ -42,8 +42,8 @@ type RequiredPath struct {
 var Required = [...]RequiredPath{
 	{Path: "posts/", Type: PathDir},
 	{Path: "index.md", Type: PathFile},
-	{Path: "themes/default/index.css", Type: PathFile},
-	{Path: "themes/default/post.css", Type: PathFile},
+	{Path: "themes/default/index.html", Type: PathFile},
+	{Path: "themes/default/post.html", Type: PathFile},
 }
 
 func CheckPath(path string, expected PathType) PathCheck {
@@ -153,5 +153,23 @@ func CopyFile(src, dst string) error {
 		return err
 	}
 
+	return nil
+}
+
+func CopyDir(src, dst string) error {
+	info, err := os.Stat(src)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("'%s' is a file, expected a directory", src)
+	}
+
+	if err := os.CopyFS(dst, os.DirFS(src)); err != nil {
+		return err
+	}
 	return nil
 }

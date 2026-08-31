@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // $ ssg init
@@ -13,8 +14,8 @@ import (
 // $ ssg init
 //	created   posts
 //	created   index.md
-//	created   themes\default\index.css
-//	created   themes\default\post.css
+//	created   themes\default\index.html
+//	created   themes\default\post.html
 //
 // initialization successful
 //
@@ -24,7 +25,7 @@ import (
 //
 // initialization failed: 'index.md' is a directory, expected file (use --force/-f to overwrite)
 //
-// $ mkdir -p {themes/default,posts,index.md} && touch themes/default/{index,post}.css
+// $ mkdir -p {themes/default,posts,index.md} && touch themes/default/{index,post}.html
 // $ ssg init
 // initialization failed: 'index.md' is a directory, expected file (use --force/-f to overwrite)
 //
@@ -34,19 +35,19 @@ import (
 // $ ssg init --force
 //	created   posts
 //	created   index.md
-//	created   themes\default\index.css
-//	created   themes\default\post.css
+//	created   themes\default\index.html
+//	created   themes\default\post.html
 //
 // $ mkdir index.md
 // $ ssg init --force
 //	created   posts
 //	modified  index.md (directory -> file)
-//	created   themes\default\index.css
-//	created   themes\default\post.css
+//	created   themes\default\index.html
+//	created   themes\default\post.html
 //
 // initialization successful
 //
-// $ mkdir -p {themes/default,posts,index.md} && touch themes/default/{index,post}.css
+// $ mkdir -p {themes/default,posts,index.md} && touch themes/default/{index,post}.html
 // $ ssg init --force
 //  modified  index.md (directory -> file)
 //
@@ -214,18 +215,20 @@ func checkLayout(path string) []PathCheck {
 }
 
 func createFile(path string) error {
-	dir := filepath.Dir(path)
-
-	err := os.MkdirAll(dir, 0755)
-	if err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}
 
-	file, err := os.Create(path)
-	if err != nil {
+	if strings.Contains(path, "themes/default/") || strings.Contains(path, "themes\\default\\") {
+		if err := createTemplateFile(path); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if err := os.WriteFile(path, nil, 0644); err != nil {
 		return err
 	}
-	defer file.Close()
 
 	return nil
 }

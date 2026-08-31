@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -72,6 +71,10 @@ func doBuild(source string) error {
 		return fmt.Errorf("build failed: %w", err)
 	}
 
+	if err := prebuild(source); err != nil {
+		return fmt.Errorf("build failed: %w", err)
+	}
+
 	if err := buildIndex(source); err != nil {
 		return fmt.Errorf("build failed: %w", err)
 	}
@@ -128,25 +131,30 @@ func preclean(source string) error {
 	return nil
 }
 
+func prebuild(source string) error {
+	theme := "default"
+	src := filepath.Join(source, "themes", theme, "assets")
+	dst := filepath.Join(source, "build", "assets")
+	bpath := filepath.Join(source, "build")
+
+	if err := os.MkdirAll(bpath, 0755); err != nil {
+		return fmt.Errorf("cannot create build directory '%s': %w", bpath, err)
+	}
+
+	if err := CopyDir(src, dst); err != nil {
+		return fmt.Errorf("cannot copy assets '%s' to '%s': %w", src, dst, err)
+	}
+
+	return nil
+}
+
 func buildIndex(source string) error {
 	theme := "default"
-	sbase := filepath.Join(source, "themes", theme)
-	dbase := filepath.Join(source, "build", "themes", theme)
+	ipath := filepath.Join(source, "index.md")
+	opath := filepath.Join(source, "build", "index.html")
+	tpl := filepath.Join(source, "themes", theme, "index.html")
 
-	if err := os.MkdirAll(dbase, 0755); err != nil {
-		return err
-	}
-
-	files := []string{"index.css", "post.css"}
-	for _, file := range files {
-		if err := CopyFile(filepath.Join(sbase, file), filepath.Join(dbase, file)); err != nil {
-			return err
-		}
-	}
-
-	src := filepath.Join(source, "index.md")
-	dst := filepath.Join(source, "build", "index.html")
-	if err := mdToHTML(src, dst, filepath.Join(sbase, "index.css")); err != nil {
+	if err := buildPage(tpl, ipath, opath); err != nil {
 		return err
 	}
 
@@ -154,6 +162,9 @@ func buildIndex(source string) error {
 }
 
 func buildPosts(source string) error {
+	theme := "default"
+	tpl := filepath.Join(source, "themes", theme, "post.html")
+
 	path := filepath.Join(source, "posts")
 	topics, err := os.ReadDir(path)
 	if err != nil {
@@ -177,7 +188,7 @@ func buildPosts(source string) error {
 			return err
 		}
 
-		if err := buildTopicPosts(filepath.Join(source, rpath), filepath.Join(source, "build", rpath)); err != nil {
+		if err := buildTopicPosts(filepath.Join(source, rpath), filepath.Join(source, "build", rpath), tpl); err != nil {
 			return err
 		}
 	}
@@ -217,7 +228,7 @@ func buildTopicImages(src, dst string) error {
 	return nil
 }
 
-func buildTopicPosts(src, dst string) error {
+func buildTopicPosts(src, dst, tpl string) error {
 	files, err := os.ReadDir(src)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -241,29 +252,9 @@ func buildTopicPosts(src, dst string) error {
 
 		ipath := filepath.Join(src, file.Name())
 		opath := filepath.Join(dst, strings.TrimSuffix(file.Name(), ".md")+".html")
-		cpath := filepath.Clean("../../themes/default/post.css")
-		if err := mdToHTML(ipath, opath, cpath); err != nil {
+		if err := buildPage(tpl, ipath, opath); err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-func mdToHTML(ipath, opath, cpath string) error {
-	// pandoc ipath --from=markdown --to=html5 --css=cpath --standalone=true --output=opath
-	cmd := exec.Command("pandoc",
-		ipath,
-		"--from=markdown",
-		"--to=html5",
-		"--css="+cpath,
-		"--standalone=true",
-		"--output="+opath,
-	)
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("pandoc %s : %w", string(output), err)
 	}
 
 	return nil

@@ -4,7 +4,6 @@ exec ssg init
 cmp stdout ../expected_out.txt
 
 
-
 cd ../tmp2
 exec ssg init
 exec ssg init --force
