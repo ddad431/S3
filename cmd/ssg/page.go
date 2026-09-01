@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 )
 
@@ -30,14 +31,31 @@ func getPageData(source string) (PageData, error) {
 	var pageData PageData
 
 	// Content
-	content, err := MDToHTML(source)
+	doc, err := converter.convert(source)
 	if err != nil {
 		return pageData, err
 	}
-	pageData.Content = content
+	pageData.Content = doc.HTML
 
-	// Title
-	pageData.Title = strings.TrimSuffix(filepath.Base(source), ".md")
+	// Meta
+	types := reflect.TypeOf(pageData)
+	values := reflect.ValueOf(&pageData).Elem()
+	for mk, mv := range doc.Meta {
+		for i := range types.NumField() {
+			if strings.EqualFold(mk, types.Field(i).Name) {
+				mv, ok := mv.(string)
+				if !ok {
+					mv = ""
+				}
+
+				values.Field(i).Set(reflect.ValueOf(mv))
+			}
+		}
+	}
+
+	if pageData.Title == "" {
+		pageData.Title = strings.TrimSuffix(filepath.Base(source), ".md")
+	}
 
 	return pageData, nil
 }

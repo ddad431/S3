@@ -6,10 +6,17 @@ import (
 	"html/template"
 	"os"
 
+	meta "github.com/yuin/goldmark-meta/v2"
+	"github.com/yuin/goldmark/v2/ast"
 	"github.com/yuin/goldmark/v2/extension"
 	"github.com/yuin/goldmark/v2/parser"
 	"github.com/yuin/goldmark/v2/renderer/html"
 )
+
+type Document struct {
+	HTML template.HTML
+	Meta map[string]any
+}
 
 type Converter struct {
 	parser   parser.Parser
@@ -23,6 +30,7 @@ func init() {
 		parser: parser.New(
 			parser.WithExtensions(
 				extension.GFMParser,
+				meta.Parser,
 			),
 		),
 		renderer: html.New(
@@ -31,18 +39,21 @@ func init() {
 	}
 }
 
-func MDToHTML(source string) (template.HTML, error) {
-    var content []byte
-    var buf bytes.Buffer
+func (c Converter) convert(source string) (Document, error) {
+	var buf bytes.Buffer
 
-    content, err := os.ReadFile(source);
-    if err != nil {
-        return "", fmt.Errorf("read '%s' fail: %w", source, err)
-    }
+	content, err := os.ReadFile(source)
+	if err != nil {
+		return Document{}, fmt.Errorf("read '%s' fail: %w", source, err)
+	}
 
-    if err := converter.renderer.Render(&buf, content, converter.parser.Parse(content)); err != nil {
-        return "", fmt.Errorf("render markdown fail: %w", err)
-    }
+	doc := c.parser.Parse(content)
+	if err := c.renderer.Render(&buf, content, doc); err != nil {
+		return Document{}, fmt.Errorf("render markdown fail: %w", err)
+	}
 
-    return template.HTML(buf.String()), nil
+	return Document{
+		HTML: template.HTML(buf.String()),
+		Meta: doc.(*ast.Document).Metadata(),
+	}, nil
 }
