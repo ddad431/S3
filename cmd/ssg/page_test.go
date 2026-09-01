@@ -1,11 +1,62 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
+
+func TestInsertMetadataCreated(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+		hasMeta bool
+	}{
+		{
+			name:    "no front matter",
+			content: "# Hello world",
+			hasMeta: false,
+		},
+		{
+			name:    "has front matter",
+			content: "---\ntitle: test\n---\n\n# Hello world",
+			hasMeta: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			file := filepath.Join(os.TempDir(), "test.md")
+			if err := os.WriteFile(file, []byte(tt.content), 0644); err != nil {
+				t.Fatalf("create test file fail: %v", err)
+			}
+
+			if err := insertMetadataCreated(file, tt.hasMeta); err != nil {
+				t.Fatalf("run insertCreatedMetadata() err: %v", err)
+			}
+
+			content, err := os.ReadFile(file)
+			if err != nil {
+				t.Fatalf("read test file fail: %v", err)
+			}
+
+			var got = string(content)
+			var want string
+			if !tt.hasMeta {
+				want = fmt.Sprintf("---\ncreated: %s\n---\n\n# Hello world", time.Now().Format("2006/01/02"))
+			} else {
+				want = fmt.Sprintf("---\ntitle: test\ncreated: %s\n---\n\n# Hello world", time.Now().Format("2006/01/02"))
+			}
+
+			if got != want {
+				t.Errorf("\nGot:\n%s\nWant:\n%s", got, want)
+			}
+		})
+	}
+}
 
 func TestGetPageData(t *testing.T) {
 	tests := []struct {

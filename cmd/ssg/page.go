@@ -2,15 +2,18 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 )
 
 type PageData struct {
 	Title   string
+	Created string
 	Content template.HTML
 }
 
@@ -57,6 +60,12 @@ func getPageData(source string) (PageData, error) {
 		pageData.Title = strings.TrimSuffix(filepath.Base(source), ".md")
 	}
 
+	if pageData.Created == "" {
+		if err := insertMetadataCreated(source, len(doc.Meta) > 0); err != nil {
+			return pageData, fmt.Errorf("failed to insert created metadata to '%s': %w", source, err)
+		}
+	}
+
 	return pageData, nil
 }
 
@@ -78,6 +87,38 @@ func renderTemplateToPage(src string, data PageData, dst string) error {
 
 	content := rule.Replace(buf.String())
 	if err := os.WriteFile(dst, []byte(content), 0644); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func insertMetadataCreated(src string, meta bool) error {
+	info, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	date := info.ModTime().Format("2006/01/02")
+	content, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+
+	created := "created: " + date
+	lines := strings.Split(string(content), "\n")
+	if !meta {
+		lines = slices.Insert(lines, 0, "---", created, "---", "")
+	} else {
+		for i := 1; i < len(lines); i++ {
+			if strings.TrimSpace(lines[i]) == "---" {
+				lines = slices.Insert(lines, i, created)
+				break
+			}
+		}
+	}
+
+	if err := os.WriteFile(src, []byte(strings.Join(lines, "\n")), 0644); err != nil {
 		return err
 	}
 
